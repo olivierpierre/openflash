@@ -1,0 +1,19 @@
+Dans quel boc on écrit :
+  - Il y a un bloc current, on empile les nodes (plutôt les flush du wbuf) dedans
+  - Quand bloc terminé : on prend un nouveau bloc de la free list
+  
+Quand la free list est vide :
+   - GC
+
+Quand on prend un nouveau bloc de la free list :
+  - On prend le suivant (champs next de la liste chainée qui constitue cette liste).
+  - COmment les blocs sont empilés dans la free list :
+    - Visiblement l'un à la suite de l'autre dans l'ordre inverse [confirmé]
+    
+Qu'est-ce qui se passe lors de la creation d'un fichier :
+  - On crée un nouvel inode (metadata FS)
+  - On crée la data node (avec une taille data de 0 et une taille totale du fichier de 0) --> juste le header de 68 octets, c'est sizeof jffs2_raw_inode
+  - et le dentry avec le nom : la taille c'est la taille du nom en octets (sans le /0) + la taille d'un struct jffs2_raw_dirent (40 octet pour notre version). En fait on écrit le header (40 octets) puis le nom après en 2 vecteurs
+
+FOnctionnement du write buffer :
+Quand une requête d'écriture arrive elle arrive en pages donc max 4096 octets. On fait la plupart du temps _une_ node avec les 4 KB (ou moins selon la taille du write). Il y a un cas dans lequel on va faire 2 nodes : c'est quand on a pas assez d'espace dans le current block pour écrire la taille totale écrite : on écrit au max dans le curretn block une node, puis on met à jour le current block et on écrit le reste des données au début du nouveau current block.

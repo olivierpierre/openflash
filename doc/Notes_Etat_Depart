@@ -1,0 +1,18 @@
+L'etat de départ se définit simplement en quantité d'espace libre / valide / invalide
+  - En MB
+  - Ou en % de l'espace total
+  
+Il y a deux moyens de charger un état de départ : 
+  - 1. jouer un workload avant la simulation :
+    - avantage : simple, indépendant du système de gestion, au moins on a un état de départ égal pour 2 simu avec sys de gestion différent
+    - désavantage : difficile d'obtenir une quantité donnée de F/V/I, long
+    
+  - 2. Charger un état de départ
+   - Plus rapide ! 
+   - Malherusement dépendant du sys de gestion
+   
+Pour aller vers 2 :
+
+c'est le sys de gestion qui sait comment charger son état de départ. On lui passe les quantitées voulues. EN analysant la trace il doit pouvoir déterminer qui va être accédé en lecture donc qui va etre valide. On doit avoir au moins tous l'espace accédé en lecture valide, donc on peut éventuellement en pas satisfaire les contraines F/V/I.
+
+Reste les simus générées avec des traces en lecture. Impossible de savoir ou les lectures vont taper. Il faudrait que le sys de gestion après avoir chargé son état de départ, passe ces infos à un générateur custom.

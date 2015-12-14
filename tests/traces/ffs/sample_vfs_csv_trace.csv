@@ -1,0 +1,55 @@
+# format specification:
+# <time (milliseconds)>;<syscall>;<param 1>;<param 2>;...;<param n>.
+# 
+# create takes 2 parameters : the inode number of the file being created
+#   and the lenght of the name of the file (both integers)
+#
+# truncate takes also 2 parameters : the inode of the truncated file and
+#   the new size of the file (both integers)
+#
+# open takes 4 parameters : inode (integer), a boolean indicating if the 
+#   file must be truncated to size zero, another boolean indicating that the
+#   file must be created if it does not exists, and a last parameter indicating
+#   the name length (integer) of the file in case it is created
+#
+# read and write take 3 integer parameters : inode, address to read / write and
+#   size to read / write
+#
+# remove take one parameter (integer) which is the inode to delete
+#
+# rename takes 2 parameters (integers) : inode and new file name length
+#
+# sync takes no parameters
+#
+# close take 1 parameter : inode
+
+10.0;	create;		2;	10
+15.0;	open;		2;	0;	0;	0
+20.0;	write;		2;	0;	143360
+40.0; 	read;		2;	0;	8192
+50.0;	sync
+55.0;	close;		2
+60.0;	remove;		2
+70.0; 	sync
+80.0;	create;		3;	5;
+85.0;	open;		3;	0;	0;	0
+90.0;	write;		3;	0;	123456
+100.0;	write;		3;	1524;	47185920
+100000.0;sync
+100005.0;close;		3
+120000.0;remove;	3
+120000.1;sync
+130000.0;create;	4;	55
+130005.0;open;		4;	0;	0;	0
+131000.0;write;		4;	1524;	47185920
+131500.0;read;		4;	0;	4096
+131505.0;read;		4;	1234555;	4096
+132000.0;close;		4
+133000.0;remove;	4
+134000.0;sync
+135000.0;create;	5;	66
+136005.0;open;		5;	0;	0;	0
+137000.0;write;		5;	1524;	47185920
+138500.0;read;		5;	0;	4096
+139505.0;read;		5;	1234555;	4096
+140000.0;close;		5

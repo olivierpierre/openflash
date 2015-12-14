@@ -1,0 +1,234 @@
+\chapter{Using the Flash Subsystem API}
+
+In this chapter we explain how to use the NAND subsystem API to describe and simulate a NAND flash based storage subsystem.
+
+\section{Basics}
+
+\subsection{The Address object}
+To address a specific object (page, block, plane, etc.) of the simulated flash subsystem, the Address object is used. Addressing is essential of course when sending commands, but also for other functions of the simulator such as gathering statistics on a given subset of the subsystem after a simulation. In the flash subsystem, an address is from a theoretical point of view a tuple of 6 elements represented as follows: 
+
+\begin{center}
+$(a, b, c, d, e, f)$
+\end{center}
+
+The members of this tuple are:
+\begin{itemize}
+  \item $a$ is the channel index in the whole flash subsystem ;
+  \item $b$ is the chip index in the channel ;
+  \item $c$ is the die index in the chip ;
+  \item $d$ is the plane index in the die ;
+  \item $e$ is the block index in the plane ;
+  \item $f$ is the page index in the block.
+\end{itemize}
+
+For example, consider a flash system with 2 channels, 4 chips per channel, 2 dies per chip, 2 planes per die, 2048 blocks per plane and 64 pages per block. If we want to address, for instance during a legacy read operation, the seventh page (page 6) in the 100th block (block 99) of the second plane (plane 1) of the first die (die 0) of the third chip (chip 2) of the first channel (channel 0) of such a subsystem, the tuple locating this exact page will be: $(0,2,0,1,99,6)$.
+
+Note that for certain operations, the lowest levels members of the address are not significant. For example, if one want to erase the block containing the page of our previous example, the page member of the address is insignificant because we target the whole block and not a particular page in this block. Therefore, any number can be passed for the page member of the address, OpenFlash will not perform any address range check on that member.
+
+At the code level, an address object is simply created with the Address class:
+
+\begin{lstlisting}
+Address a1(0,2,0,1,99,6);
+Address *a2 = new Address(0,2,0,1,99,6);
+/* do some things with a1 and *a2 */
+delete a2;
+\end{lstlisting}
+
+After instantiating, one can retrieve the members of the address using getters functions, and modify them with setters:
+
+\begin{lstlisting}
+int channel = a1.getChannel();  // Channel is 0
+a1.setDie(1);                   // Die member of a1 is now equal to 1
+\end{lstlisting}
+
+Comparison functions (\verb+==+ and \verb+!=+) are also available:
+
+\begin{lstlisting}
+Address a3(1,2,0,1,99,6);
+Address a4(0,1,0,1,1501,60);
+
+bool res = (a3 == a4);    // res is false
+bool res = (a3 != a4);    // res is true
+\end{lstlisting}
+
+For more information on the Address object, see the technical documentation here: \href{http://stockage.univ-brest.fr/~polivier/sample_doc/classAddress.html}{\textit{http://stockage.univ-brest.fr/~polivier/sample\_doc/classAddress.html}}
+
+\subsection{The Error Manager}
+That entity is used to centralize the error management in OpenFlash. Each simulation program realized with OpenFlash must have one instance of the error manager. It is declared as \verb+extern+ in one of OpenFlash headers (common.h), and must be defined as a global variable in the main file of the simulation program. The way the error manager is defined is explained hereafter.
+
+The error manager is called from various points in the OpenFlash sources. When an error or a problem arises during a simulation, the error manager is called an the simulation may be stopped according to the gravity of the error. OpenFlash error manager defines two types of problems:
+
+\begin{enumerate}
+  \item \emph{Warnings} are not fatal to the functioning of the simulation, and the simulation may continue after a warning. The role of the warning is to indicate that something unanticipated may have happen. It will in practice take the form of a warning message on the standard / error output ;
+  \item \emph{Errors} are serious and indicate that something went wrong during the simulation. In practice the simulation should not continue after an error.
+\end{enumerate}
+
+Example of errors are writing in a page already containing data, out-of-range addressing during commands sending, etc. An example of warning is the fact that a page write operation does not occur sequentially in a block. Note that for now, most of the problems that may occur in OpenFlash are \emph{errors}.
+
+At the current stage, the error manager takes two parameters:
+
+\begin{enumerate}
+  \item The fact that a simulation should stop on a \emph{warning} ;
+  \item The fact that a simulation should stop on an \emph{error}.
+\end{enumerate}
+
+It is recommended to set the error manager not to stop the simulation on a warning, and to stop the simulation on an error. Setting that a simulation should \emph{not} stop on an error is reserved for unit testing / debugging, and should never be set this way during a real simulation.
+
+In practice, the simulator \emph{stops} the simulation by executing the following instruction: \verb+assert(0)+. This allows keeping the program context in some debuggers such as gdb, for debugging purposes.
+
+As stated earlier, the error manager object is declared as '\verb+extern ErrorManager em;+' in one of OpenFlash headers. It must be defined at global scope in the main file of the simulation program, as follows:
+
+\begin{lstlisting}
+ErrorManager em(false, true, true);
+\end{lstlisting}
+
+The constructor of the ErrorManager object takes 3 parameters which are all booleans:
+
+\begin{itemize}
+  \item The first parameter indicates if the simulation should be stopped on an error ;
+  \item The second parameter indicates if the simulation should be stopped on a warning ;
+  \item The last parameter indicates if a warning should be throwed when a non sequential write occurs within a block.
+\end{itemize}
+
+The error manager will be used by the flash subsystem layer of OpenFlash, but the user may also use it in his own code. To throw a warning or an error, proceed as follows:
+
+\begin{lstlisting}
+em.warning("This is a warning");
+em.error("This is an error");
+\end{lstlisting}
+
+As the error manager is declared at global scope, one should be able to call it from anywhere in the program. The error / warning message will be printed on the error output and the program will continue or be stopped according to the parameters of the error manager.
+
+For more information concerning the ErrorManager class see the related technical documentation at the following URL:
+\href{http://stockage.univ-brest.fr/~polivier/sample_doc/classErrorManager.html}{\textit{http://stockage.univ-brest.fr/~polivier/sample\_doc/classErrorManager.html}}.
+
+\subsection{Basic simulation template \& compiling}
+
+Defining and executing a simulation require to create one or several C++ files, one of these files containing a \verb+main+ function. These files must include the OpenFlash sources which present some dependencies, in particular with the libconfig library. The libconfig library is used by OpenFlash to provide configuration file support, its use is explained in a following section of this document.
+
+Here we present how to build a simulation from a single main C++ file. The file must be present at the root of OpenFlash source (with the others OpenFlash source files). This main file must include the \verb+FlashSystem.hpp+ header, a \verb+main+ function, and the definition of the error manager as explained earlier. A basic template for a simulation program should then be as follows:
+
+\begin{lstlisting}
+#include <iostream>   // some standard includes ...
+#include <cstdlib>    // ... for practical reasons
+
+#include "FlashSystem.hpp"    // OpenFlash flash subsystem header
+
+ErrorManager em(false, true, true);   // error manager
+
+int main(int argc, char **argv)       // Main function
+{
+  return EXIT_SUCCESS;
+}
+\end{lstlisting} 
+
+Consider this file is named MySimulation.cpp. To be able to compile it edit the OpenFlash Makefile as follows:
+
+\begin{lstlisting}[language=sh, firstnumber=15]
+# Executable targets (cpp with main functions):
+UNITTESTS=UnitTests.cpp
+EXAMPLE=Example.cpp
+MYSIMULATION=MySimulation.cpp       # Add this line ...
+# Full list
+FULLSRCS=$(SRCS) $(UNITTESTS) $(MYSIMULATION) # ... and the variable here
+FULLHEADERS=$(SRCS:.cpp=.hpp) $(UNITTESTS:.cpp=.hpp)
+
+# Then add at the end of the following line a target with the name of your choice:
+all: libconfig UnitTest++ UnitTests Example MySimulation
+\end{lstlisting}
+%%$
+
+Then add the following target:
+
+\begin{lstlisting}[language=sh, firstnumber=50]
+# My simulation:
+MySimulation: $(SRCS:.cpp=.o) $(MYSIMULATION:.cpp=.o)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@ $(LDFLAGS)
+\end{lstlisting}
+
+Typing \verb+make+ in a shell at the root of OpenFlash sources should then trigger the compiling of your (empty) simulation file, and all its dependencies. You should observe the creation of a \verb+MySimulation+ executable at the end of the process. Note that for now OpenFlash makefile performs static compiling with the libraries. We are aware that static compiling is not considered as a good programming practice. However, the current goal is to distribute OpenFlash in a self sufficient archive, and we want OpenFlash not to be subject to bugs due to library code changes.
+
+\section{Defining the structure and functions of the simulated flash subsystem}
+
+The simulated flash subsystem is represented by the C++ class FlashSystem, which is the core of the OpenFlash flash subsystem layer. You can find plenty of information about the FlashSystem class in this document. This information can be completed by the technical documentation concerning the FlashSystem class. It can be found at the following URL: \href{http://stockage.univ-brest.fr/~polivier/sample_doc/classFlashSystem.html}{\textit{http://stockage.univ-brest.fr/~polivier/sample\_doc/classFlashSystem.html}}.
+
+The structural parameters for the simulated flash subsystem are defined when instantiating the FlashSystem object. They are:
+
+\begin{enumerate}
+  \item The number of pages per block ;
+  \item The number of blocks per plane ;
+  \item The number of planes per die ;
+  \item The number of dies per chip ;
+  \item The number of chips per channel ;
+  \item The total number of channels in the flash subsystem.
+\end{enumerate}
+
+These values are passed as parameters, in reverse order, to the FlashSystem constructor. The following example creates a FlashSystem object with 2 channels, 4 chips per channels, 2 dies per chip, 2 planes per die, 2048 blocks per plane and 64 pages per block:
+
+\begin{lstlisting}
+FlashSystem f1(2,4,2,2,2048,64);
+\end{lstlisting}
+
+To describe a FlashSystem with just one chip having the same structure as above:
+
+\begin{lstlisting}
+FlashSystem f2(1,1,2,2,2048,64);
+\end{lstlisting}
+
+Once the FlashSystem  object is instantiated, one can get the structural parameters using "getters" functions, such as:
+
+\begin{lstlisting}
+int pagesPerBlock = f1.getPagesPerBlockNum();   // Number of pages per block, here it is 64
+int channels = f1.getChannelNum();  // Number of channels, here 2
+
+int totalPageNum = f1.getPageNum();   // Total number of pages in the FlashSystem, here it is 2*4*2*2*2048*64 = 4194304
+\end{lstlisting}
+
+When a FlashSystem object is instantiated, it supports by default all the flash commands (described in the previous chapter). One can deactivate the support of some commands as follows:
+
+\begin{lstlisting}
+// Indicate that the flash subsystem does not support die interleaved multi plane commands:
+
+f1.setSupportedCommands(DIE_INTERLEAVED_MULTI_PLANE_READ, false);
+f1.setSupportedCommands(DIE_INTERLEAVED_MULTI_PLANE_WRITE, false);
+f1.setSupportedCommands(DIE_INTERLEAVED_MULTI_PLANE_ERASE, false);
+f1.setSupportedCommands(DIE_INTERLEAVED_MULTI_PLANE_CACHE_READ, false);
+f1.setSupportedCommands(DIE_INTERLEAVED_MULTI_PLANE_CACHE_WRITE, false);
+
+// One can also reactivate the support for some commands:
+f1.setSupportedCommands(DIE_INTERLEAVED_MULTI_PLANE_CACHE_WRITE, true);
+\end{lstlisting}
+
+The name of the command in upper case is define by the OpenFlash flash command model which will be depicted in details in the next section. Deactivating the support of some commands will result in an error thrown if one of these command is issued to the simulated system during the simulation.
+
+\section{Sending commands to the flash subsystem}
+There are two ways to send a command to the flash subsystem during the simulation:
+
+\begin{description}
+  \item[Method 1] By using one of the member function of the FlashSystem object, according to the command one want to send. For example, the FlashSystem class provides a FlashSystem::readPage() method to perform a legacy page read operation. There is one function for each of the supported commands.
+  \item[Method 2] By using the FlashSystem::receiveCommand() method, taking a \emph{FlashCommand} object as parameter. This object describes the command sent to the flash subsystem.
+\end{description}
+
+In fact, the method 1 above is just an encapsulation which internally creates a \emph{FlashCommand} object according to the operation and call the \\\verb+FlashSystem::receiveCommand()+ method. The FlashCommand class implements the OpenFlash flash command model and is used to describe a given flash operation ready to be sent to the flash subsystem. The OpenFlash flash command model is detailed in the next sections.
+
+All commands except multi chips and multi channels commands can be sent to the FlashSystem object through method 1. It is easier because one does not have to bother with instantiating a FlashCommand object. Nevertheless, multi chips and multi channels commands consists both in a set commands sent on multiple chips / multi ple channels. These commands can be of \emph{any} type\footnote{Note that a multi chip command cannot contain a multi channel / multi chip command, and that a multi channel command cannot contain itself a multi channel command}. Therefore OpenFlash uses arrays of generic types to describe the sets of commands constituting multi chips / channels commands. This generic type is the FlashCommand type.
+
+\colorbox{red}{TODO Explain the flash command model.}
+
+In the following sections we explain with examples how to send all types of commands using method 1 (member functions). Next, after having depicted the OpenFlash flash command model, when explain how to use method 2 (\\\verb+FlashSystem::receiveCommand()+ function).
+
+\input{2.5_OperationSending}
+
+\section{Describing the performance and power consumption behavior}
+
+\colorbox{red}{TODO.}
+
+\section{Using the configuration file}
+OpenFlash uses \emph{libconfig}\footnote{\href{http://www.hyperrealm.com/libconfig/}{\textit{http://www.hyperrealm.com/libconfig/}}} to provide support for a configuration file. It is a text file containing blocks of key values pairs that can be used to define the parameters of the whole simulated systems, and the parameters for the simulation itself (for example error management parameters).
+
+\subsection{The Param object}
+
+\section{Gathering simulation results}
+
+\colorbox{red}{TODO.}
+

@@ -1,0 +1,40 @@
+OpenFlash
+pierre.olivier@univ-brest.fr
+26/05/2014
+
+1. Building OpenFlash
+=====================
+
+  1.1 Dependencies :
+  -------------------
+  - cmake
+  - libgsl
+  - libconfig
+  
+  1.1.1 cmake :
+  RH, Fedora, CentOS & co. : 
+  # yum install cmake
+  Debian, Ubuntu & co. :  
+  # apt-get install cmake
+  
+  1.1.2 libgsl :
+  RH, Fedora, CentOS & co. : 
+  # yum install gsl-devel
+  Debian, Ubuntu & co. :
+  # apt-get install libgsl10-dev
+
+  1.1.3 libconfig :
+  Its not in the distros repos, so download the sources here :
+  http://www.hyperrealm.com/libconfig/
+  Untar, then cd in the source directory:
+  $ ./configure
+  $ make
+  # make install
+  
+  1.2 Building
+  ------------
+  
+  cd at the root of OpenFlash directory, then launch the script OpenFlashBuild :
+  $ ./OpenFlashBuild.sh
+  $ cd build
+  $ make

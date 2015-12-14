@@ -1,0 +1,3 @@
+* the eviction policy for the page cache is no LRU -> implement it
+* the last dentry of a deleted file (which denotes that the file is deleted) is never deleted
+* add a parameter wit ha max event queue for debug (war / Err if async_event_queue.size > X)

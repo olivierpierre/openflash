@@ -1,0 +1,25 @@
+\title{\textbf{OpenFlash: A Flash system Simulator for Performance and Energy Computation}\\~\\Flash Subsystem Layer User Guide}
+\author{Pierre Olivier <\href{mailto:pierre.olivier@univ-brest.fr}{pierre.olivier@univ-brest.fr}>}
+\date{\today}
+
+\maketitle
+
+\tableofcontents
+
+\chapter*{Introduction}
+OpenFlash is a tool for simulating NAND flash-based storage systems. It is dedicated to performance and energy computation and estimation, flash control systems comparison, prototyping, testing and validation. It is designed to cover the wide range of today's NAND applications, from embedded (mostly single chip) storage to SSD-based multi-chip, multi-channel and highly parallel storage.
+
+This document describes the flash subsystem layer of OpenFlash. This layer corresponds to the simulation of the flash components, i.e. the NAND storage architecture without the flash control layer. The models implemented in this OpenFlash layer can be used to describe the structure, simulate the behavior and compute the performance and power consumption of flash subsystems. The NAND subsystem module of OpenFlash is decoupled from the whole tool and can be used as a standalone C++ API. The usage of this API is as follows:
+\begin{enumerate}
+  \item The user input parameters to describe the desired flash subsystem ;
+  \item During the simulation, the described system is fed with an I/O trace which is a list of flash commands ;
+  \item Performance and power consumption values are computed during the simulation and presented as output at the end of the process.
+\end{enumerate}
+
+The latest version of that sub-module can be found at the following address: \href{http://stockage.univ-brest.fr/~polivier/OpenFlash/OpenFlash.tar.gz}{\textit{http://stockage.univ-brest.fr/$\sim$polivier/OpenFlash/OpenFlash.tar.gz}}. The Doxygen generated technical documentation is available here:\href{http://stockage.univ-brest.fr/~polivier/sample_doc}{\textit{http://stockage.univ-brest.fr/$\sim$polivier/\\sample\_doc}}
+
+Alternatively the technical documentation can be generated from the sources and viewed locally in a web browser by typing \verb+make view_doc+ in a terminal at the root of the source tree.
+
+This document is divided into three chapters. In the first chapter, we present the way we perceive the various characteristics of a NAND subsystem described and simulated in OpenFlash. Understanding these concepts is essential for a good use of the flash subsystem API. This first chapter describes the possibilities offered to the user wanting to describe a flash subsystem structure, functions / operations, performance and power consumption characteristics.
+
+The second chapter is the core of this document. It explains how to describe a flash subsystem using the API, and how to feed it with a trace to perform a simulation computing performance and power consumption. 
