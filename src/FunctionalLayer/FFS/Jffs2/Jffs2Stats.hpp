@@ -34,6 +34,7 @@ public:
   Jffs2Stats(bool active) : _active(active) {};
   void addJffs2CallTimingInfo(jffs2_call_type_t type, double process_time, double e_cpu, double e_mem);
   vector<jffs2_call_timing_info_t> &getCallTimingInfos() {return _calls_timing_infos;};
+  void flushStats() {_calls_timing_infos.clear();}
 
 private:
   bool _active;

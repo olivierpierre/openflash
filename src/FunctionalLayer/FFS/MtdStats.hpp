@@ -31,6 +31,7 @@ public:
   void addMtdCallInfo(mtd_call_type_t type, uint64_t page_index, double process_time,
                       double energy_mem, double energy_cpu);
   vector<mtd_call_timing_info_t> &getCallTimingInfos() {return _calls_timing_infos;};
+  void flushStats() {_calls_timing_infos.clear();}
 
 private:
   bool _active;

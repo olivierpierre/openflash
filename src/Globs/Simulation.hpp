@@ -42,6 +42,7 @@ public:
   static void kill();
   int run(string paramFile);
   int output();
+  int resetStats();
 
 
 private:

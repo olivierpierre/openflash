@@ -413,7 +413,7 @@ int Param::parsePpcModels()
 int Param::doParse()
 {
   string string_val;
-  bool parsed, bool_val;
+  bool parsed;
 
   /* flash layer */
   parseFlashLayerParameters();
@@ -431,18 +431,12 @@ int Param::doParse()
     ERROR("Unknown input trace mode " + string_val);
 
   /* print progress */
-  bool_val = parseBool("simulator.print_progress", true, &parsed);
-  if(!parsed)
-    _booleans["simulator.print_progress"] = false;
+	parseBool("simulator.print_progress", true, &parsed);
+	if(!parsed)
+	  _booleans["simulator.print_progress"] = false;
 
   /* random seed */
   parseInt("simulator.random_seed");
-
-  /* archive */
-  bool_val = parseBool("simulator.archive_mode", true, &parsed);
-  if(parsed && bool_val)
-    parseArchiveParameters();
-
 
   /* Functional layer */
   string functional_mode = parseString("functional_model.functional_mode");
@@ -638,28 +632,6 @@ void Param::sanityCheck ()
   }
 }
 
-int Param::parseArchiveParameters()
-{
-  bool parsed;
-
-  /* mandatory */
-  parseString("simulator.archive.db_addr");
-  parseString("simulator.archive.db_name");
-  parseString("simulator.archive.db_user");
-  parseString("simulator.archive.db_password");
-
-  /* optional */
-  parseBool("simulator.archive.archive_stdout", true, &parsed);
-  if(!parsed)
-    _booleans["simulator.archive.archive_stdout"] = false;
-
-  parseBool("simulator.archive.archive_trace", true, &parsed);
-  if(!parsed)
-    _booleans["simulator.archive.archive_trace"] = false;
-
-  return 0;
-}
-
 /**
  * Return true if the parameter has been parsed, false otherwise
  */
@@ -721,18 +693,11 @@ vector<ParamDesc> Param::getParamList()
   ADD_PARAM("ppc_models.performance_model.PTIN", "Transfer-in-NAND power model TODO", TYPE_DISTRIB, false);
   ADD_PARAM("ppc_models.performance_model.PIO", "One cycle Input / Output on the flash IO bus power model TODO", TYPE_DISTRIB, false);
   ADD_PARAM("ppc_models.performance_model.PBERS", "Block erase power model TODO", TYPE_DISTRIB, false);
-  ADD_PARAM("outputs.wear_leveling", "Set the output for the wear levelign stat result file, STDOUT for std output", TYPE_FILE, true);
+  ADD_PARAM("outputs.wear_leveling", "Set the output for the wear leveling stat result file, STDOUT for std output", TYPE_FILE, true);
   ADD_PARAM("outputs.jffs2", "Set the output for the jffs2 result file, STDOUT for stdout", TYPE_FILE, true);
   ADD_PARAM("outputs.mtd", "Set the output for the mtd result file, STDOUT for stdout", TYPE_FILE, true);
   ADD_PARAM("simulator.random_seed", "Random seed used by the simulator", TYPE_DOUBLE, true);
   ADD_PARAM("functional_model.ffs.jffs2.base_readpage_timing_overhead", "FFS overhead for JFFS2 readpage function", TYPE_DOUBLE, true);
-  ADD_PARAM("simulator.archive_mode", "Enable / disable archive mode", TYPE_BOOL, true);
-  ADD_PARAM("simulator.archive.db_addr", "Address (IP/host) for the mysql server in archive mode", TYPE_STRING, true);
-  ADD_PARAM("simulator.archive.db_name", "Name of the database on the server in archive mode", TYPE_STRING, true);
-  ADD_PARAM("simulator.archive.db_user", "Name of the user of the database in archive mode", TYPE_STRING, true);
-  ADD_PARAM("simulator.archive.db_password", "Password for the database in archive mode", TYPE_STRING, true);
-  ADD_PARAM("simulator.archive.archive_stdout", "In archive mode, archive stdout in addition to the outputs", TYPE_BOOL, true);
-  ADD_PARAM("simulator.archive.archive_trace", "In archive mode, archive the input trace in addition to the outputs", TYPE_BOOL, true);
   ADD_PARAM("functional_model.ffs.jffs2.base_write_end_timing_overhead", "Timing overhead added to each jffs2_write_end call", TYPE_DOUBLE, true);
   ADD_PARAM("functional_model.ffs.jffs2.base_write_begin_timing_overhead", "Timing overhead added to each jffs2_write_begin call", TYPE_DOUBLE, true);
 

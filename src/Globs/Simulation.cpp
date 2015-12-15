@@ -155,5 +155,19 @@ Simulation::~Simulation()
 int Simulation::output ()
 {
   return _output_pool->output();
-  // archive ?
+}
+
+int Simulation::resetStats()
+{
+	Jffs2 *ffs = (Jffs2 *)_flash_file_system;
+	NandDriver *mtd = (NandDriver *)_nand_driver;
+	VirtualFileSystem *vfs = (VirtualFileSystem *)_virtual_file_system;
+	FlashSystem *flash = _flash_layer;
+
+	ffs->getStats()->flushStats();
+	mtd->getStats()->flushStats();
+	vfs->getStats()->flushStats();
+	flash->resetStats();
+
+	return 0;
 }

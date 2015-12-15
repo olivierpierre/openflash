@@ -41,6 +41,7 @@ public:
   double getMeanTimePerSysCall();
   double getTotalTime();
   /* TODO Etc. */
+  void flushStats() {_calls_timing_infos.clear();}
 
 private:
   bool _active;

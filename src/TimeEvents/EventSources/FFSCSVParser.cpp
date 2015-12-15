@@ -36,10 +36,9 @@
 #include <assert.h>
 
 #include "../../Globs/Common.hpp"
-#include "../../Globs/Others/BoostProgress.hpp"
+#include "../../Globs/Simulation.hpp"
 
 using namespace std;
-using namespace boost;
 
 FFSCSVParser::FFSCSVParser (string file) : TraceParser(file), _current_line(0)
 {
@@ -116,10 +115,7 @@ vector<string> FFSCSVParser::breakCsvLine (string line, char sep)
 
 void FFSCSVParser::print_progress ()
 {
-//  cerr << _current_line << " / " << _total_lines << endl;
-
-  static progress_display show_progress( _total_lines);
-  ++show_progress;
+	cerr << _current_line << " / " << _total_lines << endl;
 }
 
 /**
@@ -158,10 +154,15 @@ Event* FFSCSVParser::allocateEventFromStringVector (vector<string>& vec)
     res = new VFSSync(atof(vec[0].c_str())*1000);
   else if(!syscall_type.compare("dropcache"))
     res = new VFSDropCache(atof(vec[0].c_str())*1000);
+  else if(!syscall_type.compare("reset_stats"))
+  {
+      Simulation *s = Simulation::getInstance();
+      s->resetStats();
+  }
   else if(!syscall_type.compare("close"))
     res = new VFSClose(atof(vec[0].c_str())*1000, atoi(vec[2].c_str()));
   else
-    ERROR("Unknonw event type on line " + nts(_current_line) + " of trace file(" + vec[1] + ")");
+    ERROR("Unknown event type on line " + nts(_current_line) + " of trace file(" + vec[1] + ")");
 
   assert(res != NULL);
 
