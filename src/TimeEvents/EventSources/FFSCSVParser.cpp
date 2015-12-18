@@ -158,6 +158,7 @@ Event* FFSCSVParser::allocateEventFromStringVector (vector<string>& vec)
   {
       Simulation *s = Simulation::getInstance();
       s->resetStats();
+      res = new VFSResetStats(atof(vec[0].c_str())*1000);
   }
   else if(!syscall_type.compare("close"))
     res = new VFSClose(atof(vec[0].c_str())*1000, atoi(vec[2].c_str()));

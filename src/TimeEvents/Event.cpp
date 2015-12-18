@@ -164,6 +164,13 @@ int VFSDropCache::processEvent ()
   return 0;
 }
 
+int VFSResetStats::processEvent()
+{
+  _res.time = 0;
+  _res.power_consumption = 0;
+  return 0;
+}
+
 /****** FTL events *******************************************************/
 
 

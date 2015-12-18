@@ -195,6 +195,15 @@ private:
   int processEvent();
 };
 
+class VFSResetStats : public WorkloadEvent
+{
+public:
+	VFSResetStats(double arrival_time) : WorkloadEvent(arrival_time) {};
+
+private:
+  int processEvent();
+};
+
 class VFSRename : public WorkloadEvent
 {
 public:

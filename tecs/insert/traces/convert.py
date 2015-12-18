@@ -3,6 +3,7 @@
 import sys, re, os
 
 CREATION_TIME_S=1000
+INODE_DELTA=2
 
 READ_RE="^(\d+.\d+);read;(\d+);(\d+);(\d+);(.+)$"
 READ_RE2="^(\d+);read;(\d+);(\d+);(\d+);(.+)$"
@@ -15,6 +16,7 @@ CLOSE_RE2="^(\d+);close;(\d+);(.+)$"
 
 
 current_filenames = []
+name_len = {}
 last_addrs = {}
 first_time = -1
 
@@ -40,6 +42,7 @@ def _warn_line(line):
     
 def _common_ops(time, name):
     global current_filenames
+    global name_len
     global last_addrs
     global first_time
     
@@ -49,6 +52,7 @@ def _common_ops(time, name):
     if name not in current_filenames:
 	current_filenames.append(name)
 	last_addrs[name] = 0
+	name_len[name] = len(os.path.basename(name))
 	
 def _common_rw_ops(name, offset, size):
     global last_addrs
@@ -91,8 +95,9 @@ if __name__ == "__main__":
 		
 	    inode_num = current_filenames.index(name)
 	    
-	    res += str(_conv_time(time)) + ";read;" + str(inode_num) + ";" + str(offset) + ";" + \
-		str(size) + "\n"
+	    if size > 0:
+		res += str(_conv_time(time)) + ";read;" + str(inode_num + INODE_DELTA) + ";" + str(offset) + ";" + \
+		    str(size) + "\n"
 	    
 	# WRITE
 	if prog_write.match(line):
@@ -108,8 +113,9 @@ if __name__ == "__main__":
 		
 	    inode_num = current_filenames.index(name)
 	    
-	    res += str(_conv_time(time)) + ";write;" + str(inode_num) + ";" + str(offset) + ";" + \
-		str(size) + "\n"
+	    if size > 0:
+		res += str(_conv_time(time)) + ";write;" + str(inode_num + INODE_DELTA) + ";" + str(offset) + ";" + \
+		    str(size) + "\n"
 	    
 	if prog_open.match(line):
 	    groups = prog_open.search(line).groups()
@@ -120,7 +126,7 @@ if __name__ == "__main__":
 		
 	    inode_num = current_filenames.index(name)
 	    
-	    res += str(_conv_time(time)) + ";open;" + str(inode_num) + ";0;0;0" + "\n"
+	    res += str(_conv_time(time)) + ";open;" + str(inode_num + INODE_DELTA) + ";0;0;0" + "\n"
 	    
 	if prog_close.match(line):
 	    groups = prog_close.search(line).groups()
@@ -131,16 +137,24 @@ if __name__ == "__main__":
 		
 	    inode_num = current_filenames.index(name)
 	    
-	    res += str(_conv_time(time)) + ";close;" + str(inode_num) + "\n"
+	    res += str(_conv_time(time)) + ";close;" + str(inode_num + INODE_DELTA) + "\n"
 	    
 	if _warn_line(line) != 0:
 	    sys.exit(-1)
     
     i=0
+    
     for f in last_addrs:
-	print str(i) + ".0;open;" + str(current_filenames.index(f)) + ";0;0;0"
-	print str(i) + ".1;write;" + str(current_filenames.index(f)) + ";0;" + str(last_addrs[f])
-	print str(i) + ".1;close;" + str(current_filenames.index(f))
+	print str(i) + ".0;create;" + str(i + INODE_DELTA) + ";" + str(10)
+	i += 1
+    
+    for f in last_addrs:
+	#~ print str(i) + ".0;create;" + str(current_filenames.index(f)+INODE_DELTA) + ";" + str(name_len[f])
+	print str(i) + ".1;open;" + str(current_filenames.index(f)+INODE_DELTA) + ";0;0;0"
+	if last_addrs[f] > 0:
+	    print str(i) + ".2;write;" + str(current_filenames.index(f)+INODE_DELTA) + ";0;" + str(last_addrs[f])
+	print str(i) + ".3;close;" + str(current_filenames.index(f)+INODE_DELTA)
+	print str(i) + ".4;reset_stats"
 	i += 1
 	
     print res
