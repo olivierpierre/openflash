@@ -1,0 +1,4 @@
+#<time_stamp>;<sys_call>;<arguments;>
+1400721401.38;open;3;0;0;0;/mnt/flash/test.db
+1400721401.79;read;3;0;100;/mnt/flash/test.db
+1400721403.64;close;3;/mnt/flash/test.db
