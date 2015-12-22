@@ -20,12 +20,12 @@ class Jffs2WriteBuffer
 {
 public:
   Jffs2WriteBuffer (Jffs2 *fs, int size);
-  PpcValF writeNode(Jffs2Node *dn);
-  PpcValF flush();
+  PpcValF writeNode(Jffs2Node *dn, mtd_call_src_t src);
+  PpcValF flush(mtd_call_src_t src);
   bool empty();
   Address getAddress();
   uint32_t getFreeSpaceLeftInCurrentBlock();
-  PpcValF forceNewBlock();
+  PpcValF forceNewBlock(mtd_call_src_t src);
   uint32_t getCurrentBLockIndex();
 
 private:
@@ -37,8 +37,8 @@ private:
   Jffs2 *_fs;			/* pointer to the file system */
   NandDriver *_d;		/* nand driver for flash r/w/e operations */
 
-  PpcValF fillBuffer(Jffs2Node *n, int size, int *res);
-  PpcValF writePageAndUpdateIfNeeded(vector<Jffs2Node *> &content);
+  PpcValF fillBuffer(Jffs2Node *n, int size, int *res, mtd_call_src_t src);
+  PpcValF writePageAndUpdateIfNeeded(vector<Jffs2Node *> &content, mtd_call_src_t src);
   int updateCurrentBlock();
 
   friend class Jffs2;

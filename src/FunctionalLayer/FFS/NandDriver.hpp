@@ -27,9 +27,9 @@ public:
   static void kill();
   virtual ~NandDriver();
 
-  PpcValF readPage(Address addr);
-  PpcValF writePage(Address addr);
-  PpcValF eraseBlock(Address addr);
+  PpcValF readPage(Address addr, mtd_call_src_t src);
+  PpcValF writePage(Address addr, mtd_call_src_t src);
+  PpcValF eraseBlock(Address addr, mtd_call_src_t src);
 
   Address byteAddrToPage(uint64_t byte_addr);
   vector<Address> byteRangeToPages(uint64_t start, uint32_t size);

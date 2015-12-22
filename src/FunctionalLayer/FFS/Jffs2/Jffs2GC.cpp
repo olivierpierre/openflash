@@ -461,7 +461,7 @@ PpcValF Jffs2GC::eraseFromErasePending ()
 
   // erase the block
   Address addr = NandDriver::getInstance()->byteAddrToPage(b->getOffset());
-  res = res + _fs->_d->eraseBlock(addr);
+  res = res + _fs->_d->eraseBlock(addr, MTD_SRC_JFFS2_GC);
 //  LegacyErase le(addr);
 //  res.time += le.getTimeTaken();
 //  res.power_consumption += le.getEnergyConsumed();
@@ -495,7 +495,7 @@ PpcValF Jffs2GC::checkAndMarkCleanFromEraseComplete ()
     for(int i=0; i<(int)PAGES_PER_BLOCK; i++)
     {
       addr.setPage(i);
-      res = res + _fs->_d->readPage(addr);
+      res = res + _fs->_d->readPage(addr, MTD_SRC_JFFS2_GC);
 //      LegacyRead lr(addr);
 //      res.time += lr.getTimeTaken();
 //      res.power_consumption += lr.getEnergyConsumed();
@@ -555,7 +555,7 @@ PpcValF Jffs2GC::moveOneNode ()
       /* read the page */
       vector<Address> pages_to_read = _fs->_d->byteRangeToPages(n->getFlashOffset(), n->getFlashSize());
       for(int i=0; i<(int)pages_to_read.size(); i++)
-	res = res + _fs->_d->readPage(pages_to_read[i]);	/* TODO check here ! */
+	res = res + _fs->_d->readPage(pages_to_read[i], MTD_SRC_JFFS2_GC);	/* TODO check here ! */
 
 #ifdef VERBOSE
       cout << "[JFFS2] block " << _current_gc_block->getIndex() << " node " <<
@@ -565,10 +565,10 @@ PpcValF Jffs2GC::moveOneNode ()
 
       /* we must assure there is enough space in the current block */
       if(_fs->_wbuf->getFreeSpaceLeftInCurrentBlock() < n->getFlashSize())
-	res = res + _fs->_wbuf->forceNewBlock();
+	res = res + _fs->_wbuf->forceNewBlock(MTD_SRC_JFFS2_GC);
 
       /* move the node */
-      res = res + _fs->_wbuf->writeNode(n);
+      res = res + _fs->_wbuf->writeNode(n, MTD_SRC_JFFS2_GC);
 
       /* done */
       work_done = true;

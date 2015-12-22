@@ -23,7 +23,7 @@ Jffs2WriteBuffer::Jffs2WriteBuffer (Jffs2 *fs, int size)
 /**
  * Send a node to the write buffer
  */
-PpcValF Jffs2WriteBuffer::writeNode(Jffs2Node *n)
+PpcValF Jffs2WriteBuffer::writeNode(Jffs2Node *n, mtd_call_src_t src)
 {
   PpcValF res = {0, 0};
   int to_write = n->getFlashSize();
@@ -40,7 +40,7 @@ PpcValF Jffs2WriteBuffer::writeNode(Jffs2Node *n)
     if(to_write > 0)
     {
       int written;
-      res = res + fillBuffer(n, to_write, &written);
+      res = res + fillBuffer(n, to_write, &written, src);
       to_write -= written;
     }
 
@@ -48,14 +48,14 @@ PpcValF Jffs2WriteBuffer::writeNode(Jffs2Node *n)
     while(to_write >= _size)
     {
       // flush if needed
-      flush();
+      flush(src);
 
       // direct write for the full pages
       vector<Jffs2Node *>v; v.push_back(n);
       int nb_full_pages_to_write = to_write / PAGE_SIZE_BYTE;
       for(int i=0; i<nb_full_pages_to_write; i++)
       {
-	res = res + writePageAndUpdateIfNeeded(v);
+	res = res + writePageAndUpdateIfNeeded(v, src);
 	to_write -= _size;
       }
     }
@@ -70,14 +70,14 @@ PpcValF Jffs2WriteBuffer::writeNode(Jffs2Node *n)
  * Flush the write buffer if needed
  *
  */
-PpcValF Jffs2WriteBuffer::flush()
+PpcValF Jffs2WriteBuffer::flush(mtd_call_src_t src)
 {
   PpcValF res = {0, 0};
   if(empty())				// flush not needed
     return res;
 
   //do the actual write
-  res = res + writePageAndUpdateIfNeeded(_content);
+  res = res + writePageAndUpdateIfNeeded(_content, src);
 
   // reset buffer
   _wbuf_offset = 0;
@@ -92,7 +92,7 @@ PpcValF Jffs2WriteBuffer::flush()
  * May trigger a flush if we arrive at the end of the buffer
  * The number of bytes actually written in the buffer is set in *written
  */
-PpcValF Jffs2WriteBuffer::fillBuffer(Jffs2Node *n, int size, int *written)
+PpcValF Jffs2WriteBuffer::fillBuffer(Jffs2Node *n, int size, int *written, mtd_call_src_t src)
 {
   PpcValF res = {0, 0};
   *written = 0;
@@ -105,7 +105,7 @@ PpcValF Jffs2WriteBuffer::fillBuffer(Jffs2Node *n, int size, int *written)
   assert(_wbuf_offset <= _size);
 
   if(_wbuf_offset == _size)
-    res = res + flush();
+    res = res + flush(src);
 
   return res;
 }
@@ -122,7 +122,7 @@ bool Jffs2WriteBuffer::empty ()
  * Write @ current block & page, update current block & current page if needed
  * updated is set to true if the current block is updated
  */
-PpcValF Jffs2WriteBuffer::writePageAndUpdateIfNeeded(vector<Jffs2Node *> &content)
+PpcValF Jffs2WriteBuffer::writePageAndUpdateIfNeeded(vector<Jffs2Node *> &content, mtd_call_src_t src)
 {
   PpcValF res = {0, 0};
 
@@ -135,7 +135,7 @@ PpcValF Jffs2WriteBuffer::writePageAndUpdateIfNeeded(vector<Jffs2Node *> &conten
     priv->push_back(content[i]);
 
   /* 3. write page */
-  res = res + _d->writePage(addr);
+  res = res + _d->writePage(addr, src);
 
   /* 4. set page priv */
   _fs->_f->setPagePriv(addr, priv);
@@ -191,7 +191,7 @@ uint32_t Jffs2WriteBuffer::getFreeSpaceLeftInCurrentBlock ()
 /**
  * Force the selection of a new block for _current_block
  */
-PpcValF Jffs2WriteBuffer::forceNewBlock ()
+PpcValF Jffs2WriteBuffer::forceNewBlock (mtd_call_src_t src)
 {
   PpcValF res = {0, 0};
 
@@ -200,7 +200,7 @@ PpcValF Jffs2WriteBuffer::forceNewBlock ()
    * current block !
    */
   Jffs2Block * old_cb = _current_block;
-  res = res + flush();
+  res = res + flush(src);
   if(old_cb == _current_block)
     updateCurrentBlock();
 

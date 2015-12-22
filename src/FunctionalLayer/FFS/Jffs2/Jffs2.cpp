@@ -105,7 +105,7 @@ PpcValF Jffs2::ffsReadPage (uint32_t inode_num, uint32_t page_index, int *ret)
        continue;
      }
 
-     res = res + _d->readPage(frag_pages_to_read[j]);
+     res = res + _d->readPage(frag_pages_to_read[j], MTD_SRC_JFFS2_READPAGE);
 
      // check priv data
      if(_read_check)
@@ -212,7 +212,7 @@ PpcValF Jffs2::ffsWriteEnd(uint32_t inode_num, uint32_t page_index, uint32_t off
 #endif /* NDEBUG */
   if(_wbuf->getFreeSpaceLeftInCurrentBlock() < (SIZEOF_JFFS2_RAW_INODE+1))
   {
-    res = res + _wbuf->flush();
+    res = res + _wbuf->flush(MTD_SRC_JFFS2_WRITE_END);
     assert(old_current_block != _wbuf->getAddress().getBlock());
   }
 
@@ -234,7 +234,7 @@ PpcValF Jffs2::ffsWriteEnd(uint32_t inode_num, uint32_t page_index, uint32_t off
     //add it to the FS metadata
     Jffs2DataNode *dn_ptr = f->addDataNode(dn);
     //write on flash through wbuf
-    res = res + _wbuf->writeNode(static_cast<Jffs2DataNode *>(dn_ptr));
+    res = res + _wbuf->writeNode(static_cast<Jffs2DataNode *>(dn_ptr), MTD_SRC_JFFS2_WRITE_END);
   }
   else
   {
@@ -251,7 +251,7 @@ PpcValF Jffs2::ffsWriteEnd(uint32_t inode_num, uint32_t page_index, uint32_t off
                       node1_count, new_file_size, _gc);
     // add n1 to FS metadata
     Jffs2DataNode *dn1_ptr = f->addDataNode(dn1);
-    res = res + _wbuf->writeNode(static_cast<Jffs2DataNode *>(dn1_ptr));
+    res = res + _wbuf->writeNode(static_cast<Jffs2DataNode *>(dn1_ptr), MTD_SRC_JFFS2_WRITE_END);
 
     // node2
     // the preceding write operation should have triggerred a change in current block
@@ -266,7 +266,7 @@ PpcValF Jffs2::ffsWriteEnd(uint32_t inode_num, uint32_t page_index, uint32_t off
                       node2_count, new_file_size, _gc);
     // add n2 to FS metadata
     Jffs2DataNode *dn2_ptr = f->addDataNode(dn2);
-    res = res + _wbuf->writeNode(static_cast<Jffs2DataNode *>(dn2_ptr));
+    res = res + _wbuf->writeNode(static_cast<Jffs2DataNode *>(dn2_ptr), MTD_SRC_JFFS2_WRITE_END);
   }
 
   _stats->addJffs2CallTimingInfo(JFFS2_WRITE_END, res.time, res.e_cpu, res.e_mem);
@@ -300,7 +300,7 @@ PpcValF Jffs2::ffsRemove (uint32_t inode_num)
 
   //write node
   Jffs2DirentNode *dn_ptr = file->addDirentNode(dn);
-  res = res + _wbuf->writeNode(static_cast<Jffs2Node *>(dn_ptr));
+  res = res + _wbuf->writeNode(static_cast<Jffs2Node *>(dn_ptr), MTD_SRC_JFFS2_REMOVE);
 
   _gc->gcdTrigger();
 
@@ -363,13 +363,13 @@ PpcValF Jffs2::ffsCreate (uint32_t inode_num, int name_len)
   Jffs2DataNode dn(inode_num, 1, 0, 0, 0, _gc);
   Jffs2DataNode * dn_ptr = f.addDataNode(dn);
 
-  res = res + _wbuf->writeNode(static_cast<Jffs2Node *>(dn_ptr));
+  res = res + _wbuf->writeNode(static_cast<Jffs2Node *>(dn_ptr), MTD_SRC_JFFS2_CREATE);
 
   /* 3. Write dirent */
   Jffs2DirentNode di(inode_num, 1, name_len, _gc);
   Jffs2DirentNode * di_ptr = f.addDirentNode(di);
 
-  res = res + _wbuf->writeNode(static_cast<Jffs2Node *>(di_ptr));
+  res = res + _wbuf->writeNode(static_cast<Jffs2Node *>(di_ptr), MTD_SRC_JFFS2_CREATE);
 
   _gc->gcdTrigger();
 
@@ -394,7 +394,7 @@ PpcValF Jffs2::ffsSync ()
 #ifdef VERBOSE
   cout << "[JFFS2] Syncing" << endl;
 #endif /* VERBOSE */
-  res = res + _wbuf->flush();
+  res = res + _wbuf->flush(MTD_SRC_JFFS2_SYNC);
 
   res = res + _gc->garbageCollectorPass();
 
@@ -421,7 +421,7 @@ PpcValF Jffs2::ffsTruncate (uint32_t inode_num, uint32_t length)
   uint32_t last_data_node_version = f->getLastDataNodeVersion();
   Jffs2DataNode dn(inode_num, last_data_node_version+1, 0, 0, 0, _gc);
   Jffs2DataNode *dn_ptr = f->addDataNode(dn);		// addDataNode will take care of metadata updating
-  res = res + _wbuf->writeNode(static_cast<Jffs2Node *>(dn_ptr));
+  res = res + _wbuf->writeNode(static_cast<Jffs2Node *>(dn_ptr), MTD_SRC_JFFS2_TRUNCATE);
 
   _gc->gcdTrigger();
 
@@ -454,12 +454,12 @@ PpcValF Jffs2::ffsRename (uint32_t inode, int new_name_len)
 
   //write node
   Jffs2DirentNode *dn_ptr = file->addDirentNode(dn);
-  res = res + _wbuf->writeNode(static_cast<Jffs2Node *>(dn_ptr));
+  res = res + _wbuf->writeNode(static_cast<Jffs2Node *>(dn_ptr), MTD_SRC_JFFS2_RENAME);
 
   // Then write the new dirent
   Jffs2DirentNode dn2(inode, last_dirent_node_version+2, new_name_len, _gc);
   Jffs2DirentNode *dn2_ptr = file->addDirentNode(dn2);
-  res = res + _wbuf->writeNode(static_cast<Jffs2Node *>(dn2_ptr));
+  res = res + _wbuf->writeNode(static_cast<Jffs2Node *>(dn2_ptr), MTD_SRC_JFFS2_RENAME);
 
   _gc->gcdTrigger();
 

@@ -65,7 +65,7 @@ void NandDriver::kill()
 /**
  * Interface : read a flash page
  */
-PpcValF NandDriver::readPage (Address addr)
+PpcValF NandDriver::readPage (Address addr, mtd_call_src_t src)
 {
   PpcValF res = {0, 0};
 
@@ -77,7 +77,7 @@ PpcValF NandDriver::readPage (Address addr)
 #endif /* VERBOSE */
 
     /* TODO lets say for now this consumes nothing */
-    _stats->addMtdCallInfo(MTD_READ_HIT, addrToPageIndex(addr), res.time, 0, 0);
+    _stats->addMtdCallInfo(MTD_READ_HIT, addrToPageIndex(addr), res.time, 0, 0, src);
 
     return res;
   }
@@ -86,7 +86,7 @@ PpcValF NandDriver::readPage (Address addr)
 
   res.time = lr.getTimeTaken();
   res.time += _read_time_overhead;
-  /* on FFS mode we do not use the theoritical PC model (no lr.getEnergyConsumed) */
+  /* on FFS mode we do not use the theoretical PC model (no lr.getEnergyConsumed) */
   res.e_mem = (res.time/1000000.0)*_read_mem_power;
   res.e_cpu = (res.time/1000000.0)*_read_cpu_power;
 
@@ -100,7 +100,7 @@ PpcValF NandDriver::readPage (Address addr)
   cout << "[MTD] page read @" << addr << " : " << res.time << " us" << endl;
 #endif /* VERBOSE */
 
-  _stats->addMtdCallInfo(MTD_READ, addrToPageIndex(addr), res.time, res.e_mem, res.e_cpu);
+  _stats->addMtdCallInfo(MTD_READ, addrToPageIndex(addr), res.time, res.e_mem, res.e_cpu, src);
 
   return res;
 }
@@ -108,14 +108,14 @@ PpcValF NandDriver::readPage (Address addr)
 /**
  * Interface : write a flash page
  */
-PpcValF NandDriver::writePage (Address addr)
+PpcValF NandDriver::writePage (Address addr, mtd_call_src_t src)
 {
   PpcValF res;
   LegacyWrite lw(addr);
 
   res.time = lw.getTimeTaken();
   res.time += _write_time_overhead;
-  /* on FFS mode we do not use the theoritical PC model (no lw.getEnergyConsumed) */
+  /* on FFS mode we do not use the theoretical PC model (no lw.getEnergyConsumed) */
   res.e_mem = (res.time/1000000.0)*_write_mem_power;
   res.e_cpu = (res.time/1000000.0)*_write_cpu_power;
 
@@ -128,7 +128,7 @@ PpcValF NandDriver::writePage (Address addr)
   cout << "[MTD] page write @" << addr << " : " << res.time << " us" << endl;
 #endif /* VERBOSE */
 
-  _stats->addMtdCallInfo(MTD_WRITE, addrToPageIndex(addr), res.time, res.e_mem, res.e_cpu);
+  _stats->addMtdCallInfo(MTD_WRITE, addrToPageIndex(addr), res.time, res.e_mem, res.e_cpu, src);
 
   return res;
 }
@@ -136,14 +136,14 @@ PpcValF NandDriver::writePage (Address addr)
 /**
  * Interface : erase a flash block
  */
-PpcValF NandDriver::eraseBlock (Address addr)
+PpcValF NandDriver::eraseBlock (Address addr, mtd_call_src_t src)
 {
   PpcValF res;
   LegacyErase le(addr);
 
   res.time = le.getTimeTaken();
   res.time += _erase_time_overhead;
-  /* on FFS mode we do not use the theoritical PC model (no lw.getEnergyConsumed) */
+  /* on FFS mode we do not use the theoretical PC model (no lw.getEnergyConsumed) */
   res.e_mem = (res.time/1000000.0)*_erase_mem_power;
   res.e_cpu = (res.time/1000000.0)*_erase_cpu_power;
 
@@ -158,7 +158,7 @@ PpcValF NandDriver::eraseBlock (Address addr)
   cout << "[MTD] block erase @" << addr << " : " << res.time << " us" << endl;
 #endif /* VERBOSE */
 
-  _stats->addMtdCallInfo(MTD_ERASE, addrToPageIndex(addr)/PAGES_PER_BLOCK, res.time, res.e_mem, res.e_cpu);
+  _stats->addMtdCallInfo(MTD_ERASE, addrToPageIndex(addr)/PAGES_PER_BLOCK, res.time, res.e_mem, res.e_cpu, src);
 
   return res;
 }
