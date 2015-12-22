@@ -201,7 +201,7 @@ Event* FFSCSVParser::allocateEventFromStringVector (vector<string>& vec)
   else if(!syscall_type.compare("close"))
     res = new VFSClose(atof(vec[0].c_str())*1000, atoi(vec[2].c_str()));
   else
-    ERROR("Unknown event type on line " + nts(_current_line) + " of trace file(" + vec[1] + ")");
+    ERROR("Unknown event type on line " + nts(_current_line) + " of trace file (" + vec[1] + ")");
 
   assert(res != NULL);
 

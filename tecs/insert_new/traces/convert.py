@@ -72,6 +72,7 @@ if __name__ == "__main__":
     
     if len(sys.argv) != 2:
 	print "Usage : " + sys.argv[0] + " <trace_file>"
+	sys.exit(-1)
 	
     prog_read = re.compile(READ_RE)
     prog_write = re.compile(WRITE_RE)
@@ -152,9 +153,29 @@ if __name__ == "__main__":
 	#~ print str(i) + ".0;create;" + str(current_filenames.index(f)+INODE_DELTA) + ";" + str(name_len[f])
 	print str(i*1000) + ".1;open;" + str(current_filenames.index(f)+INODE_DELTA) + ";0;0;0"
 	if last_addrs[f] > 0:
-	    print str(i*1000) + ".2;write;" + str(current_filenames.index(f)+INODE_DELTA) + ";0;" + str(last_addrs[f])
+	    if "select" in os.path.abspath(os.path.join(".", os.pardir)):
+		for j in range(0, (last_addrs[f]/1024)):
+		    print str(i*1000) + ".2;write;" + str(current_filenames.index(f)+INODE_DELTA) + ";" + str(j*1024) + ";1024"
+	    else:
+		print str(i*1000) + ".2;write;" + str(current_filenames.index(f)+INODE_DELTA) + ";0;" + str(last_addrs[f])
 	print str(i*1000) + ".3;close;" + str(current_filenames.index(f)+INODE_DELTA)
 	print str(i*1000) + ".4;reset_stats"
+	if "select" in os.path.abspath(os.path.join(".", os.pardir)):
+	    print str(i*1000) + ".5;dropcache"
 	i += 1
 	
-    print res
+    base = -1
+    prog = re.compile("^(\d+\.\d+);(.+)$")
+    for line in res.split("\n"):
+	if not prog.match(line):
+	    if line is not "":
+		print "ERROR: arghl: " + line
+	    else:
+		continue
+	    
+	if base == -1:
+	    base = float(prog.search(line).groups()[0])
+	time = float(prog.search(line).groups()[0]) - base + (i-1)*1000 + 0.51
+	print str(time) + ";" + prog.search(line).groups()[1]
+	
+    #~ print res

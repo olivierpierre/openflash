@@ -1,8 +1,8 @@
 Wear leveling statistics
 ========================
 Total number of blocks : 800
-Total number of erase operations is : 36
-  - Legacy : 36
+Total number of erase operations is : 26
+  - Legacy : 26
   - Multi-plane : 0
 <---------------- cut here ---------------------->
 # Flash erase operation spreading :
@@ -745,10 +745,10 @@ Total number of erase operations is : 36
 735;0
 736;0
 737;0
-738;1
+738;0
 739;0
 740;0
-741;1
+741;0
 742;0
 743;0
 744;0
@@ -757,13 +757,13 @@ Total number of erase operations is : 36
 747;0
 748;0
 749;0
-750;1
+750;0
 751;0
 752;0
 753;0
 754;0
 755;0
-756;0
+756;1
 757;0
 758;0
 759;0
@@ -774,13 +774,13 @@ Total number of erase operations is : 36
 764;0
 765;0
 766;0
-767;1
-768;1
-769;1
-770;1
-771;1
-772;1
-773;1
+767;0
+768;0
+769;0
+770;0
+771;0
+772;0
+773;0
 774;1
 775;1
 776;1
@@ -791,7 +791,7 @@ Total number of erase operations is : 36
 781;1
 782;1
 783;1
-784;1
+784;0
 785;1
 786;1
 787;1

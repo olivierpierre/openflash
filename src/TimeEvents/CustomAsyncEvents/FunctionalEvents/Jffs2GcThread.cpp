@@ -24,9 +24,10 @@ int Jffs2GcThread::processEvent ()
 void Jffs2GcThread::insert ()
 {
   /* compute arrival time */
-  double rate = Param::getInstance()->getDouble("functional_model.ffs.jffs2.bg_thread_inter_arrival_exponential_rate");
+//  double rate = Param::getInstance()->getDouble("functional_model.ffs.jffs2.bg_thread_inter_arrival_exponential_rate");
   double base = Param::getInstance()->getDouble("functional_model.ffs.jffs2.bg_thread_inter_arrival_exponential_base");
-  double arrival_time = RanDist::getInstance()->exponentialRateDist(base, rate);
+//  double arrival_time = RanDist::getInstance()->exponentialRateDist(base, rate);
+  double arrival_time = base;
 
   Jffs2GcThread *event = new Jffs2GcThread(arrival_time);
   EventProcessor::getInstance()->insertAsyncEventIn(*event);

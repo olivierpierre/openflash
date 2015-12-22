@@ -169,8 +169,11 @@ def _process_mtd_simu_res(path):
     res = {"mtd_write" : 0, "mtd_read" : 0, "mtd_erase" : 0, "mtd_read_hit" : 0}
 	
     for line in lines:
+	if "jffs2_gc" in line:
+	    continue
 	if prog.match(line):
 	    name = prog.search(line).groups()[0]
+	    print name
 	    res[name] += 1
 	else:
 	    if line[0] is not '#':

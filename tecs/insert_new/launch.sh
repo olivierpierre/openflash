@@ -2,16 +2,18 @@
 
 #~ echo "#trace;simu - number of flash write operations;real - number of flash write operations"
 
-WB_128="6.5"
-WB_4096="12.8"
+WB_128="5.7"
+WB_4096="12.7"
 WE_128="30.0"
 WE_4096="1000.0"
 RP_128="30.0"
-RP_4096="30.0"
-VFSR_128="20.0"
-VFSR_4096="20.0"
+RP_4096="240.0"
+VFSR_128="30.0"
+VFSR_4096="370.0"
 VFSW_128="120.0"
 VFSW_4096="100.0"
+
+cd traces && ./convert.sh && cd ..
 
 # 128
 for f in `ls traces/parsed_100_128_*.csv`; do
@@ -44,3 +46,4 @@ done
 # Cleanup
 rm jffs2.txt vfs.txt wear_leveling.txt mtd.txt conf.cfg
 
+./process_res.sh
