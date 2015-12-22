@@ -54,6 +54,7 @@ private:
   double _base_writepage_cpu_energy_overhead;
   double _base_writepage_mem_energy_overhead;
   double _base_readpage_overhead;
+  double _base_writepage_overhead;
 
   VfsStats *_stats;
 

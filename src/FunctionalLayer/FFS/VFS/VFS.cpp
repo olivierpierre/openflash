@@ -57,6 +57,7 @@ VirtualFileSystem::VirtualFileSystem(FlashFileSystem* ffs, uint64_t page_cache_s
   _base_writepage_cpu_energy_overhead = Param::getInstance()->getDouble("functional_model.vfs.base_writepage_cpu_energy_overhead");
   _base_writepage_mem_energy_overhead = Param::getInstance()->getDouble("functional_model.vfs.base_writepage_mem_energy_overhead");
   _base_readpage_overhead = Param::getInstance()->getDouble("functional_model.vfs.base_readpage_overhead");
+  _base_writepage_overhead = Param::getInstance()->getDouble("functional_model.vfs.base_writepage_overhead");
 
   /** create the pdflush deamon */
   PdFlush *pdf = new PdFlush(Param::getInstance()->getDouble("functional_model.vfs.pdflush_frequency"));
@@ -202,6 +203,8 @@ PpcValF VirtualFileSystem::vfsWrite (uint32_t inode, uint32_t offset, uint32_t c
     res.e_mem += _base_writepage_mem_energy_overhead;
     res.e_cpu += _base_writepage_cpu_energy_overhead;
   }
+
+  res.time += (_base_writepage_overhead);
 
   _stats->addVfsCallInfo(VFS_WRITE, res.time, res.e_cpu, res.e_mem);
 

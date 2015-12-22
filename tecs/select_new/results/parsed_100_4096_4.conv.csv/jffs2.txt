@@ -1,0 +1,5 @@
+# JFFS2 Statistics
+# ================
+# A call to jffs2_readpage can be triggered by a vfs_read with a page cache miss, but also a 
+# call to jffs2_write_begin (coming from a vfs_write) on a page wich is not up to date. 
+# type ; process time ; e_mem ; e_cpu

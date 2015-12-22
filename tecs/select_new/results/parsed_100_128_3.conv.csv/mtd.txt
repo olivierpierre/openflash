@@ -1,0 +1,3 @@
+# MTD Statistics
+# ==============
+# operation;address (page index for R/W, bloc for E);time taken;energy mem;energy cpu

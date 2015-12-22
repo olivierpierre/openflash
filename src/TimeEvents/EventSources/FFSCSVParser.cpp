@@ -137,25 +137,63 @@ Event* FFSCSVParser::allocateEventFromStringVector (vector<string>& vec)
   // TODO compute arrival time here and replace below double arrival_time =
 
   if(!syscall_type.compare("create"))
+  { 
+    if(vec.size() != 4)
+      ERROR("Input trace line " + nts(_current_line) + ": malformed create");
     res = new VFSCreate(atof(vec[0].c_str())*1000, atoi(vec[2].c_str()), atoi(vec[3].c_str()));
+  }
   else if(!syscall_type.compare("truncate"))
+  {
+    if(vec.size() != 4)
+      ERROR("Input trace line " + nts(_current_line) + ": malformed truncate");
     res = new VFSTruncate(atof(vec[0].c_str())*1000, atoi(vec[2].c_str()), atoi(vec[3].c_str()));
+  }
   else if(!syscall_type.compare("open"))
+  {
+    if(vec.size() != 6)
+      ERROR("Input trace line " + nts(_current_line) + ": malformed open");
     res = new VFSOpen(atof(vec[0].c_str())*1000, atoi(vec[2].c_str()), atoi(vec[3].c_str()), atoi(vec[4].c_str()), atoi(vec[5].c_str()));
+  }
   else if(!syscall_type.compare("read"))
+  {
+    if(vec.size() != 5)
+      ERROR("Input trace line " + nts(_current_line) + ": malformed read");
     res = new VFSRead(atof(vec[0].c_str())*1000, atoi(vec[2].c_str()), atoi(vec[3].c_str()), atoi(vec[4].c_str()));
+  }
   else if(!syscall_type.compare("write"))
+  {
+    if(vec.size() != 5)
+      ERROR("Input trace line " + nts(_current_line) + ": malformed write");
     res = new VFSWrite(atof(vec[0].c_str())*1000, atoi(vec[2].c_str()), atoi(vec[3].c_str()), atoi(vec[4].c_str()));
+  }
   else if(!syscall_type.compare("remove"))
+  {
+    if(vec.size() != 3)
+      ERROR("Input trace line " + nts(_current_line) + ": malformed remove");
     res = new VFSRemove(atof(vec[0].c_str())*1000, atoi(vec[2].c_str()));
+  }
   else if(!syscall_type.compare("rename"))
+  {
+    if(vec.size() != 4)
+      ERROR("Input trace line " + nts(_current_line) + ": malformed rename");
     res = new VFSRename(atof(vec[0].c_str())*1000, atoi(vec[2].c_str()), atoi(vec[3].c_str()));
+  }
   else if(!syscall_type.compare("sync"))
+  {
+    if(vec.size() != 2)
+      ERROR("Input trace line " + nts(_current_line) + ": malformed sync");
     res = new VFSSync(atof(vec[0].c_str())*1000);
+  }
   else if(!syscall_type.compare("dropcache"))
+  {
+    if(vec.size() != 2)
+      ERROR("Input trace line " + nts(_current_line) + ": malformed drop cache");
     res = new VFSDropCache(atof(vec[0].c_str())*1000);
+  } 
   else if(!syscall_type.compare("reset_stats"))
   {
+      if(vec.size() != 2)
+        ERROR("Input trace line " + nts(_current_line) + ": malformed reset stats");
       Simulation *s = Simulation::getInstance();
       s->resetStats();
       res = new VFSResetStats(atof(vec[0].c_str())*1000);

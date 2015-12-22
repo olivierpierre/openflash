@@ -520,6 +520,7 @@ int Param::parseFfsParameters ()
   parseDouble("functional_model.vfs.base_writepage_cpu_energy_overhead");
   parseDouble("functional_model.vfs.base_writepage_mem_energy_overhead");
   parseDouble("functional_model.vfs.base_readpage_overhead");
+  parseDouble("functional_model.vfs.base_writepage_overhead");
 
   return 0;
 }
