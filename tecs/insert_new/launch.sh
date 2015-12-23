@@ -2,15 +2,15 @@
 
 #~ echo "#trace;simu - number of flash write operations;real - number of flash write operations"
 
-WB_128="5.7"
+WB_128="6.8"
 WB_4096="12.7"
-WE_128="30.0"
+WE_128="48.0"
 WE_4096="1000.0"
-RP_128="30.0"
+RP_128="0.0"
 RP_4096="240.0"
-VFSR_128="30.0"
+VFSR_128="1170.0"
 VFSR_4096="370.0"
-VFSW_128="120.0"
+VFSW_128="130.0"
 VFSW_4096="100.0"
 
 cd traces && ./convert.sh && cd ..
